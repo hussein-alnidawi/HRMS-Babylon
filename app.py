@@ -11,8 +11,9 @@ import os
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'mysql://root:password@localhost/hrms_babylon')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///hrms_babylon.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
 
 # Initialize SQLAlchemy
 db = SQLAlchemy(app)
@@ -63,7 +64,8 @@ def index():
     try:
         total_employees = Employee.query.filter_by(is_active=True).count()
         total_departments = Department.query.filter_by(is_active=True).count()
-    except:
+    except Exception as e:
+        app.logger.error(f"Database error: {str(e)}")
         total_employees = 0
         total_departments = 0
     
@@ -77,7 +79,8 @@ def departments():
     """List all departments"""
     try:
         departments_list = Department.query.filter_by(is_active=True).all()
-    except:
+    except Exception as e:
+        app.logger.error(f"Database error: {str(e)}")
         departments_list = []
         flash('Database connection error. Please check your configuration.', 'error')
     
@@ -113,7 +116,8 @@ def employees():
     """List all employees"""
     try:
         employees_list = Employee.query.filter_by(is_active=True).all()
-    except:
+    except Exception as e:
+        app.logger.error(f"Database error: {str(e)}")
         employees_list = []
         flash('Database connection error. Please check your configuration.', 'error')
     
@@ -125,7 +129,8 @@ def add_employee():
     """Add a new employee"""
     try:
         departments_list = Department.query.filter_by(is_active=True).all()
-    except:
+    except Exception as e:
+        app.logger.error(f"Database error: {str(e)}")
         departments_list = []
     
     if request.method == 'POST':
@@ -175,4 +180,7 @@ def server_error(e):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=3000)
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    host = os.environ.get('FLASK_HOST', '127.0.0.1')
+    port = int(os.environ.get('FLASK_PORT', 3000))
+    app.run(debug=debug_mode, host=host, port=port)
