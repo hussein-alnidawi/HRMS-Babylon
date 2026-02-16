@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Employees - HRMS-Babylon{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Employees</h1>
+    <a href="{{ url_for('add_employee') }}" class="btn btn-primary">+ Add Employee</a>
+</div>
+
+<div class="table-container">
+    {% if employees %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Department</th>
+                <th>Position</th>
+                <th>Hire Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for emp in employees %}
+            <tr>
+                <td>{{ emp.id }}</td>
+                <td><strong>{{ emp.first_name }} {{ emp.last_name }}</strong></td>
+                <td>{{ emp.email }}</td>
+                <td>{{ emp.phone or 'N/A' }}</td>
+                <td>{{ emp.department.name if emp.department else 'N/A' }}</td>
+                <td>{{ emp.position or 'N/A' }}</td>
+                <td>{{ emp.hire_date.strftime('%Y-%m-%d') if emp.hire_date else 'N/A' }}</td>
+                <td>
+                    {% if emp.is_active %}
+                    <span class="badge badge-success">Active</span>
+                    {% else %}
+                    <span class="badge badge-danger">Inactive</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">👥</div>
+        <h3>No Employees Found</h3>
+        <p>Get started by adding your first employee.</p>
+        <a href="{{ url_for('add_employee') }}" class="btn btn-primary">+ Add Employee</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
